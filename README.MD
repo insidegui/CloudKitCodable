@@ -61,10 +61,10 @@ let rambo = Person(
 )
 
 do {
-	let record = try CloudKitRecordEncoder().encode(rambo)
-	// record is now a CKRecord you can upload to CloudKit
+   let record = try CloudKitRecordEncoder().encode(rambo)
+   // record is now a CKRecord you can upload to CloudKit
 } catch {
-	// something went wrong
+   // something went wrong
 }
 ```
 
@@ -75,8 +75,8 @@ To decode the record:
 ```swift
 let record = // record obtained from CloudKit
 do {
-	let person = try CloudKitRecordDecoder().decode(Person.self, from: record)
+   let person = try CloudKitRecordDecoder().decode(Person.self, from: record)
 } catch {
-	// something went wrong
+   // something went wrong
 }
 ```
