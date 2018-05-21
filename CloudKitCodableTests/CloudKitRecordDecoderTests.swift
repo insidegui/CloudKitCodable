@@ -30,4 +30,15 @@ final class CloudKitRecordDecoderTests: XCTestCase {
         _validateDecodedPerson(samePersonDecoded)
     }
 
+    func testRoundTripWithCustomZoneID() throws {
+        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+        let encodedPerson = try CloudKitRecordEncoder(zoneID: zoneID).encode(Person.rambo)
+        let samePersonDecoded = try CloudKitRecordDecoder().decode(Person.self, from: encodedPerson)
+        let samePersonReencoded = try CloudKitRecordEncoder().encode(samePersonDecoded)
+
+        _validateDecodedPerson(samePersonDecoded)
+
+        XCTAssert(encodedPerson.recordID.zoneID == samePersonReencoded.recordID.zoneID)
+    }
+
 }
