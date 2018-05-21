@@ -31,9 +31,11 @@ public enum CloudKitRecordEncodingError: Error {
 }
 
 public class CloudKitRecordEncoder {
+    public var zoneID: CKRecordZoneID?
+
     public func encode(_ value: Encodable) throws -> CKRecord {
         let type = recordTypeName(for: value)
-        let encoder = _CloudKitRecordEncoder(recordTypeName: type)
+        let encoder = _CloudKitRecordEncoder(recordTypeName: type, zoneID: zoneID)
         try value.encode(to: encoder)
         return encoder.record
     }
@@ -46,14 +48,18 @@ public class CloudKitRecordEncoder {
         }
     }
 
-    public init() { }
+    public init(zoneID: CKRecordZoneID? = nil) {
+        self.zoneID = zoneID
+    }
 }
 
 final class _CloudKitRecordEncoder {
+    let zoneID: CKRecordZoneID?
     let recordTypeName: String
 
-    init(recordTypeName: String) {
+    init(recordTypeName: String, zoneID: CKRecordZoneID?) {
         self.recordTypeName = recordTypeName
+        self.zoneID = zoneID
     }
 
     var codingPath: [CodingKey] = []
@@ -69,7 +75,13 @@ extension CodingUserInfoKey {
 
 extension _CloudKitRecordEncoder: Encoder {
     var record: CKRecord {
-        return container?.record ?? CKRecord(recordType: recordTypeName)
+        if let existingRecord = container?.record { return existingRecord }
+
+        if let zoneID = zoneID {
+            return CKRecord(recordType: recordTypeName, zoneID: zoneID)
+        } else {
+            return CKRecord(recordType: recordTypeName)
+        }
     }
 
     fileprivate func assertCanCreateContainer() {
@@ -80,6 +92,7 @@ extension _CloudKitRecordEncoder: Encoder {
         assertCanCreateContainer()
 
         let container = KeyedContainer<Key>(recordTypeName: self.recordTypeName,
+                                            zoneID: self.zoneID,
                                             codingPath: self.codingPath,
                                             userInfo: self.userInfo)
         self.container = container
@@ -103,14 +116,16 @@ protocol CloudKitRecordEncodingContainer: class {
 extension _CloudKitRecordEncoder {
     final class KeyedContainer<Key> where Key: CodingKey {
         let recordTypeName: String
+        let zoneID: CKRecordZoneID?
         var metaRecord: CKRecord?
         var codingPath: [CodingKey]
         var userInfo: [CodingUserInfoKey: Any]
 
         fileprivate var storage: [String: CKRecordValue] = [:]
 
-        init(recordTypeName: String, codingPath: [CodingKey], userInfo: [CodingUserInfoKey : Any]) {
+        init(recordTypeName: String, zoneID: CKRecordZoneID?, codingPath: [CodingKey], userInfo: [CodingUserInfoKey : Any]) {
             self.recordTypeName = recordTypeName
+            self.zoneID = zoneID
             self.codingPath = codingPath
             self.userInfo = userInfo
         }
@@ -195,6 +210,8 @@ extension _CloudKitRecordEncoder.KeyedContainer: CloudKitRecordEncodingContainer
 
         if let metaRecord = self.metaRecord {
             output = metaRecord
+        } else if let zoneID = zoneID {
+            output = CKRecord(recordType: recordTypeName, zoneID: zoneID)
         } else {
             output = CKRecord(recordType: recordTypeName)
         }
