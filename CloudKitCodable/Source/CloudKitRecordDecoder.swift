@@ -10,10 +10,12 @@ import Foundation
 import CloudKit
 
 final public class CloudKitRecordDecoder {
-    func decode<T>(_ type: T.Type, from record: CKRecord) throws -> T where T : Decodable {
+    public func decode<T>(_ type: T.Type, from record: CKRecord) throws -> T where T : Decodable {
         let decoder = _CloudKitRecordDecoder(record: record)
         return try T(from: decoder)
     }
+
+    public init() { }
 }
 
 final class _CloudKitRecordDecoder {

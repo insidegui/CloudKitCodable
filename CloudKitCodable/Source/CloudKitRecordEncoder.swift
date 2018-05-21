@@ -31,7 +31,7 @@ public enum CloudKitRecordEncodingError: Error {
 }
 
 public class CloudKitRecordEncoder {
-    func encode(_ value: Encodable) throws -> CKRecord {
+    public func encode(_ value: Encodable) throws -> CKRecord {
         let type = recordTypeName(for: value)
         let encoder = _CloudKitRecordEncoder(recordTypeName: type)
         try value.encode(to: encoder)
@@ -45,6 +45,8 @@ public class CloudKitRecordEncoder {
             return String(describing: type(of: value))
         }
     }
+
+    public init() { }
 }
 
 final class _CloudKitRecordEncoder {
