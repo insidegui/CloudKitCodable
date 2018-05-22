@@ -14,11 +14,16 @@ internal let _CKSystemFieldsKeyName = "cloudKitSystemFields"
 public protocol CloudKitRecordRepresentable {
     var cloudKitSystemFields: Data? { get }
     var cloudKitRecordType: String { get }
+    var cloudKitIdentifier: String { get }
 }
 
 extension CloudKitRecordRepresentable {
     public var cloudKitRecordType: String {
         return String(describing: type(of: self))
+    }
+
+    public var cloudKitIdentifier: String {
+        return UUID().uuidString
     }
 }
 

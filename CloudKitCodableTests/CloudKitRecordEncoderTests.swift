@@ -40,5 +40,14 @@ final class CloudKitRecordEncoderTests: XCTestCase {
 
         _validateRamboFields(in: record)
     }
+
+    func testCustomRecordIdentifierEncoding() throws {
+        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+
+        let record = try CloudKitRecordEncoder(zoneID: zoneID).encode(PersonWithCustomIdentifier.rambo)
+
+        XCTAssert(record.recordID.zoneID == zoneID)
+        XCTAssert(record.recordID.recordName == "MY-ID")
+    }
     
 }

@@ -26,3 +26,9 @@ struct Person: CustomCloudKitCodable, Equatable {
             && lhs.isDeveloper == rhs.isDeveloper
     }
 }
+
+struct PersonWithCustomIdentifier: CustomCloudKitCodable {
+    var cloudKitSystemFields: Data?
+    var cloudKitIdentifier: String
+    let name: String
+}

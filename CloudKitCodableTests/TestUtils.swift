@@ -76,3 +76,10 @@ extension Person {
     )
 
 }
+
+extension PersonWithCustomIdentifier {
+
+    static let rambo = PersonWithCustomIdentifier(cloudKitSystemFields: nil,
+                                                  cloudKitIdentifier: "MY-ID",
+                                                  name: "Guilherme Rambo")
+}

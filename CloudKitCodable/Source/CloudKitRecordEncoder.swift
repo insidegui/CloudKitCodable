@@ -35,8 +35,12 @@ public class CloudKitRecordEncoder {
 
     public func encode(_ value: Encodable) throws -> CKRecord {
         let type = recordTypeName(for: value)
-        let encoder = _CloudKitRecordEncoder(recordTypeName: type, zoneID: zoneID)
+        let name = recordName(for: value)
+
+        let encoder = _CloudKitRecordEncoder(recordTypeName: type, zoneID: zoneID, recordName: name)
+
         try value.encode(to: encoder)
+
         return encoder.record
     }
 
@@ -48,6 +52,14 @@ public class CloudKitRecordEncoder {
         }
     }
 
+    private func recordName(for value: Encodable) -> String {
+        if let customValue = value as? CustomCloudKitEncodable {
+            return customValue.cloudKitIdentifier
+        } else {
+            return UUID().uuidString
+        }
+    }
+
     public init(zoneID: CKRecordZoneID? = nil) {
         self.zoneID = zoneID
     }
@@ -56,10 +68,12 @@ public class CloudKitRecordEncoder {
 final class _CloudKitRecordEncoder {
     let zoneID: CKRecordZoneID?
     let recordTypeName: String
+    let recordName: String
 
-    init(recordTypeName: String, zoneID: CKRecordZoneID?) {
+    init(recordTypeName: String, zoneID: CKRecordZoneID?, recordName: String) {
         self.recordTypeName = recordTypeName
         self.zoneID = zoneID
+        self.recordName = recordName
     }
 
     var codingPath: [CodingKey] = []
@@ -77,11 +91,10 @@ extension _CloudKitRecordEncoder: Encoder {
     var record: CKRecord {
         if let existingRecord = container?.record { return existingRecord }
 
-        if let zoneID = zoneID {
-            return CKRecord(recordType: recordTypeName, zoneID: zoneID)
-        } else {
-            return CKRecord(recordType: recordTypeName)
-        }
+        let zid = zoneID ?? CKRecordZoneID(zoneName: CKRecordZoneDefaultName, ownerName: CKCurrentUserDefaultName)
+        let rid = CKRecordID(recordName: recordName, zoneID: zid)
+
+        return CKRecord(recordType: recordTypeName, recordID: rid)
     }
 
     fileprivate func assertCanCreateContainer() {
@@ -93,6 +106,7 @@ extension _CloudKitRecordEncoder: Encoder {
 
         let container = KeyedContainer<Key>(recordTypeName: self.recordTypeName,
                                             zoneID: self.zoneID,
+                                            recordName: self.recordName,
                                             codingPath: self.codingPath,
                                             userInfo: self.userInfo)
         self.container = container
@@ -117,15 +131,22 @@ extension _CloudKitRecordEncoder {
     final class KeyedContainer<Key> where Key: CodingKey {
         let recordTypeName: String
         let zoneID: CKRecordZoneID?
+        let recordName: String
         var metaRecord: CKRecord?
         var codingPath: [CodingKey]
         var userInfo: [CodingUserInfoKey: Any]
 
         fileprivate var storage: [String: CKRecordValue] = [:]
 
-        init(recordTypeName: String, zoneID: CKRecordZoneID?, codingPath: [CodingKey], userInfo: [CodingUserInfoKey : Any]) {
+        init(recordTypeName: String,
+             zoneID: CKRecordZoneID?,
+             recordName: String,
+             codingPath: [CodingKey],
+             userInfo: [CodingUserInfoKey : Any])
+        {
             self.recordTypeName = recordTypeName
             self.zoneID = zoneID
+            self.recordName = recordName
             self.codingPath = codingPath
             self.userInfo = userInfo
         }
@@ -205,15 +226,18 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
 
 extension _CloudKitRecordEncoder.KeyedContainer: CloudKitRecordEncodingContainer {
 
+    var recordID: CKRecordID {
+        let zid = zoneID ?? CKRecordZoneID(zoneName: CKRecordZoneDefaultName, ownerName: CKCurrentUserDefaultName)
+        return CKRecordID(recordName: recordName, zoneID: zid)
+    }
+
     var record: CKRecord? {
         let output: CKRecord
 
         if let metaRecord = self.metaRecord {
             output = metaRecord
-        } else if let zoneID = zoneID {
-            output = CKRecord(recordType: recordTypeName, zoneID: zoneID)
         } else {
-            output = CKRecord(recordType: recordTypeName)
+            output = CKRecord(recordType: recordTypeName, recordID: recordID)
         }
 
         guard output.recordType == recordTypeName else {
