@@ -121,6 +121,10 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
             return systemFieldsData as! T
         }
 
+        if key.stringValue == _CKIdentifierKeyName {
+            return record.recordID.recordName as! T
+        }
+
         // Bools are encoded as Int64 in CloudKit
         if type == Bool.self {
             return try decodeBool(forKey: key) as! T

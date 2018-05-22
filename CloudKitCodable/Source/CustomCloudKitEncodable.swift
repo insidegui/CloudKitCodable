@@ -10,6 +10,7 @@ import Foundation
 import CloudKit
 
 internal let _CKSystemFieldsKeyName = "cloudKitSystemFields"
+internal let _CKIdentifierKeyName = "cloudKitIdentifier"
 
 public protocol CloudKitRecordRepresentable {
     var cloudKitSystemFields: Data? { get }
