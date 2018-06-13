@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		02DF660120D1772900A20812 /* CloudKitCodable.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02DF65F820D1772900A20812 /* CloudKitCodable.framework */; };
-		02DF660620D1772900A20812 /* CloudKitCodable_iOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DF660520D1772900A20812 /* CloudKitCodable_iOSTests.swift */; };
 		02DF660820D1772900A20812 /* CloudKitCodable_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DF65FA20D1772900A20812 /* CloudKitCodable_iOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		02DF660F20D1774300A20812 /* Rambo.ckrecord in Resources */ = {isa = PBXBuildFile; fileRef = DD7FD01D20A72BE000F5778D /* Rambo.ckrecord */; };
 		02DF661020D1774300A20812 /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCD637320A655E500CDB5B2 /* Person.swift */; };
@@ -52,7 +51,6 @@
 		02DF65FA20D1772900A20812 /* CloudKitCodable_iOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CloudKitCodable_iOS.h; sourceTree = "<group>"; };
 		02DF65FB20D1772900A20812 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		02DF660020D1772900A20812 /* CloudKitCodable-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CloudKitCodable-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		02DF660520D1772900A20812 /* CloudKitCodable_iOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitCodable_iOSTests.swift; sourceTree = "<group>"; };
 		02DF660720D1772900A20812 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DD7FCFF720A7232F00F5778D /* CloudKitRecordDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitRecordDecoder.swift; sourceTree = "<group>"; };
 		DD7FCFF920A725CF00F5778D /* CloudKitRecordDecoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitRecordDecoderTests.swift; sourceTree = "<group>"; };
@@ -115,7 +113,6 @@
 		02DF660420D1772900A20812 /* CloudKitCodable-iOSTests */ = {
 			isa = PBXGroup;
 			children = (
-				02DF660520D1772900A20812 /* CloudKitCodable_iOSTests.swift */,
 				02DF660720D1772900A20812 /* Info.plist */,
 			);
 			path = "CloudKitCodable-iOSTests";
@@ -381,7 +378,6 @@
 			files = (
 				02DF661220D1774300A20812 /* CloudKitRecordDecoderTests.swift in Sources */,
 				02DF661020D1774300A20812 /* Person.swift in Sources */,
-				02DF660620D1772900A20812 /* CloudKitCodable_iOSTests.swift in Sources */,
 				02DF661320D1774300A20812 /* TestUtils.swift in Sources */,
 				02DF661120D1774300A20812 /* CloudKitRecordEncoderTests.swift in Sources */,
 			);
