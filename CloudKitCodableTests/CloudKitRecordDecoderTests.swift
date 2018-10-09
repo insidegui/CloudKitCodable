@@ -31,7 +31,7 @@ final class CloudKitRecordDecoderTests: XCTestCase {
     }
 
     func testRoundTripWithCustomZoneID() throws {
-        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+        let zoneID = CKRecordZone.ID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
         let encodedPerson = try CloudKitRecordEncoder(zoneID: zoneID).encode(Person.rambo)
         let samePersonDecoded = try CloudKitRecordDecoder().decode(Person.self, from: encodedPerson)
         let samePersonReencoded = try CloudKitRecordEncoder().encode(samePersonDecoded)
@@ -42,7 +42,7 @@ final class CloudKitRecordDecoderTests: XCTestCase {
     }
 
     func testCustomRecordIdentifierRoundTrip() throws {
-        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+        let zoneID = CKRecordZone.ID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
 
         let record = try CloudKitRecordEncoder(zoneID: zoneID).encode(PersonWithCustomIdentifier.rambo)
 

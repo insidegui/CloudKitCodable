@@ -22,8 +22,8 @@ extension CKRecord {
     /// Creates a temporary record to simulate what would happen when encoding a CKRecord
     /// from a value that was previosly encoded to a CKRecord and had its system fields set
     static var systemFieldsDataForTesting: Data {
-        let zoneID = CKRecordZoneID(zoneName: "ZoneABCD", ownerName: "OwnerABCD")
-        let recordID = CKRecordID(recordName: "RecordABCD", zoneID: zoneID)
+        let zoneID = CKRecordZone.ID(zoneName: "ZoneABCD", ownerName: "OwnerABCD")
+        let recordID = CKRecord.ID(recordName: "RecordABCD", zoneID: zoneID)
         let testRecord = CKRecord(recordType: "Person", recordID: recordID)
         let data = NSMutableData()
         let coder = NSKeyedArchiver.init(forWritingWith: data)
