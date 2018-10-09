@@ -19,7 +19,7 @@ final class CloudKitRecordEncoderTests: XCTestCase {
     }
 
     func testCustomZoneIDEncoding() throws {
-        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+        let zoneID = CKRecordZone.ID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
 
         let record = try CloudKitRecordEncoder(zoneID: zoneID).encode(Person.rambo)
         _validateRamboFields(in: record)
@@ -42,7 +42,7 @@ final class CloudKitRecordEncoderTests: XCTestCase {
     }
 
     func testCustomRecordIdentifierEncoding() throws {
-        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+        let zoneID = CKRecordZone.ID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
 
         let record = try CloudKitRecordEncoder(zoneID: zoneID).encode(PersonWithCustomIdentifier.rambo)
 
