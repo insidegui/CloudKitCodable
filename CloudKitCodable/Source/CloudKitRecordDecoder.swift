@@ -145,7 +145,11 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
 
     private func decodeURL(forKey key: Key) throws -> URL {
         if let asset = record[key.stringValue] as? CKAsset {
-            return decodeURL(from: asset)
+            guard let url = decodeURL(from: asset) else {
+                throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "CKAsset must have a URL")
+            }
+
+            return url
         }
 
         guard let str = record[key.stringValue] as? String else {
@@ -161,7 +165,7 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
         return url
     }
 
-    private func decodeURL(from asset: CKAsset) -> URL {
+    private func decodeURL(from asset: CKAsset) -> URL? {
         return asset.fileURL
     }
 

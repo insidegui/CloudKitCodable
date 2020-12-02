@@ -22,8 +22,8 @@ extension CKRecord {
     /// Creates a temporary record to simulate what would happen when encoding a CKRecord
     /// from a value that was previosly encoded to a CKRecord and had its system fields set
     static var systemFieldsDataForTesting: Data {
-        let zoneID = CKRecordZoneID(zoneName: "ZoneABCD", ownerName: "OwnerABCD")
-        let recordID = CKRecordID(recordName: "RecordABCD", zoneID: zoneID)
+        let zoneID = CKRecordZone.ID(zoneName: "ZoneABCD", ownerName: "OwnerABCD")
+        let recordID = CKRecord.ID(recordName: "RecordABCD", zoneID: zoneID)
         let testRecord = CKRecord(recordType: "Person", recordID: recordID)
         let data = NSMutableData()
         let coder = NSKeyedArchiver.init(forWritingWith: data)
@@ -58,7 +58,7 @@ func _validateRamboFields(in record: CKRecord) {
         return
     }
 
-    XCTAssertEqual(asset.fileURL.path, "/Users/inside/Library/Containers/br.com.guilhermerambo.CloudKitRoundTrip/Data/Library/Caches/CloudKit/aa007d03cf247aebef55372fa57c05d0dc3d8682/Assets/7644AD10-A5A5-4191-B4FF-EF412CC08A52.01ec4e7f3a4fe140bcc758ae2c4a30c7bbb04de8db")
+    XCTAssertEqual(asset.fileURL!.path, "/Users/inside/Library/Containers/br.com.guilhermerambo.CloudKitRoundTrip/Data/Library/Caches/CloudKit/aa007d03cf247aebef55372fa57c05d0dc3d8682/Assets/7644AD10-A5A5-4191-B4FF-EF412CC08A52.01ec4e7f3a4fe140bcc758ae2c4a30c7bbb04de8db")
     
     XCTAssertNil(record[_CKSystemFieldsKeyName], "\(_CKSystemFieldsKeyName) should NOT be encoded to the record directly")
 }
