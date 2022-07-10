@@ -15,14 +15,14 @@ final class CloudKitRecordEncoderTests: XCTestCase {
     func testComplexPersonStructEncoding() throws {
         let record = try CloudKitRecordEncoder().encode(Person.rambo)
 
-        _validateRamboFields(in: record)
+        try _validateRamboFields(in: record)
     }
 
     func testCustomZoneIDEncoding() throws {
-        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+        let zoneID = CKRecordZone.ID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
 
         let record = try CloudKitRecordEncoder(zoneID: zoneID).encode(Person.rambo)
-        _validateRamboFields(in: record)
+        try _validateRamboFields(in: record)
 
         XCTAssert(record.recordID.zoneID == zoneID)
     }
@@ -38,11 +38,11 @@ final class CloudKitRecordEncoderTests: XCTestCase {
         XCTAssertEqual(record.recordID.zoneID.zoneName, "ZoneABCD")
         XCTAssertEqual(record.recordID.zoneID.ownerName, "OwnerABCD")
 
-        _validateRamboFields(in: record)
+        try _validateRamboFields(in: record)
     }
 
     func testCustomRecordIdentifierEncoding() throws {
-        let zoneID = CKRecordZoneID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
+        let zoneID = CKRecordZone.ID(zoneName: "ABCDE", ownerName: CKCurrentUserDefaultName)
 
         let record = try CloudKitRecordEncoder(zoneID: zoneID).encode(PersonWithCustomIdentifier.rambo)
 
