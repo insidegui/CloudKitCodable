@@ -21,3 +21,5 @@ Pods/
 Carthage
 Provisioning
 Crashlytics.sh
+.swiftpm
+.build
