@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/insidegui/CloudKitCodable.svg?branch=master)](https://travis-ci.org/insidegui/CloudKitCodable)
-
 # CloudKit + Codable = ❤️
 
 This project implements a `CloudKitRecordEncoder` and a `CloudKitRecordDecoder` so you can easily convert your custom data structure to a `CKRecord` and convert your `CKRecord` back to your custom data structure.

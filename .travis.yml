@@ -1,6 +1,0 @@
-os: osx
-osx_image: xcode9.3
-script:
-  - xcodebuild -version
-  - set -o pipefail && env "NSUnbufferedIO=YES" xcodebuild test -scheme CloudKitCodable -project CloudKitCodable.xcodeproj | xcpretty -f `xcpretty-travis-formatter`
-  - set -o pipefail && env "NSUnbufferedIO=YES" xcodebuild test -scheme CloudKitCodable-iOS -project CloudKitCodable.xcodeproj -sdk iphonesimulator -destination 'platform=iOS Simulator,OS=11.3,name=iPhone 6' | xcpretty -f `xcpretty-travis-formatter`
