@@ -8,7 +8,7 @@ This project implements a `CloudKitRecordEncoder` and a `CloudKitRecordDecoder` 
 
 ## Usage
 
-## `CustomCloudKitCodable`
+### `CustomCloudKitCodable`
 
 The types you want to convert to/from `CKRecord` must implement the `CustomCloudKitCodable` protocol. This is necessary because unlike most implementations of encoders/decoders, we are not converting to/from `Data`, but to/from `CKRecord`, which has some special requirements.
 
@@ -28,12 +28,12 @@ var cloudKitRecordType: String { get }
 
 This property should return the record type for your custom type. It's implemented automatically to return the name of the type, you only need to implement this if you need to customize the record type.
 
-## URLs
+### URLs
 There's special handling for URLs because of the way CloudKit works with files. If you have a property that's a remote `URL` (i.e. a website), it's encoded as a `String` (CloudKit doesn't support URLs natively) and decoded back as a `URL`. 
 
 If your property is a `URL` and it contains a `URL` to a local file, it is encoded as a `CKAsset`, the file will be automatically uploaded to CloudKit when you save the containing record and downloaded when you get the record from the cloud. The decoded `URL` will contain the `URL` for the location on disk where CloudKit has downloaded the file.
 
-## Example
+### Example
 
 Let's say you have a `Person` model you want to sync to CloudKit. This is what the model would look like:
 
@@ -83,30 +83,26 @@ do {
 }
 ```
 
----
-
-### Requirements
+## Requirements
 
 - iOS 13.0+
 - macOS 11.0+
 - Xcode 13.2+
 
-### Installation
+## Installation
 
-#### Swift Package Manager
+### Swift Package Manager
 
-The [Swift Package Manager](https://www.swift.org/package-manager) is a tool for automating the distribution of Swift code and is integrated into the Swift build system.
+[Swift Package Manager](https://www.swift.org/package-manager) is a tool for automating the distribution of Swift code and is integrated into the Swift build system.
 
 Once you have your Swift package set up, adding CloudKitCodable as a dependency is as easy as adding it to the dependencies value of your `Package.swift`.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/insidegui/CloudKitCodable.git", .upToNextMajor(from: "0.2.0"))
+    .package(url: "https://github.com/insidegui/CloudKitCodable.git", from: "0.2.0")
 ]
 ```
 
-#### Manually
+### Manually
 
-If you prefer not to use SPM, you can integrate CloudKitCodable into your project manually by copying the files in.
-
----
+If you prefer not to use Swift Package Manager, you can integrate CloudKitCodable into your project manually by copying the files in.
