@@ -1,5 +1,7 @@
 # CloudKit + Codable = ❤️
 
+[![Badge showing the current build status](https://github.com/insidegui/CloudKitCodable/workflows/Swift%20Package/badge.svg)](https://github.com/insidegui/CloudKitCodable/actions)
+
 This project implements a `CloudKitRecordEncoder` and a `CloudKitRecordDecoder` so you can easily convert your custom data structure to a `CKRecord` and convert your `CKRecord` back to your custom data structure.
 
 **Be aware this is an initial implementation that's not being used in production (yet) and it doesn't support nesting. Nested values would have to be encoded as `CKReference` and I haven't implemented that yet (feel free to open a PR 🤓).**
