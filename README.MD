@@ -1,6 +1,6 @@
 # CloudKit + Codable = ❤️
 
-[![Badge showing the current build status](https://github.com/insidegui/CloudKitCodable/workflows/Swift%20Package/badge.svg)](https://github.com/insidegui/CloudKitCodable/actions)
+[![Badge showing the current build status](https://github.com/insidegui/CloudKitCodable/actions/workflows/swift-package.yml/badge.svg)](https://github.com/insidegui/CloudKitCodable/actions/workflows/swift-package.yml)
 
 This project implements a `CloudKitRecordEncoder` and a `CloudKitRecordDecoder` so you can easily convert your custom data structure to a `CKRecord` and convert your `CKRecord` back to your custom data structure.
 
