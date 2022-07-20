@@ -31,7 +31,7 @@ public enum CloudKitRecordEncodingError: Error {
 }
 
 public class CloudKitRecordEncoder {
-    public var zoneID: CKRecordZoneID?
+    public var zoneID: CKRecordZone.ID?
 
     public func encode(_ value: Encodable) throws -> CKRecord {
         let type = recordTypeName(for: value)
@@ -60,17 +60,17 @@ public class CloudKitRecordEncoder {
         }
     }
 
-    public init(zoneID: CKRecordZoneID? = nil) {
+    public init(zoneID: CKRecordZone.ID? = nil) {
         self.zoneID = zoneID
     }
 }
 
 final class _CloudKitRecordEncoder {
-    let zoneID: CKRecordZoneID?
+    let zoneID: CKRecordZone.ID?
     let recordTypeName: String
     let recordName: String
 
-    init(recordTypeName: String, zoneID: CKRecordZoneID?, recordName: String) {
+    init(recordTypeName: String, zoneID: CKRecordZone.ID?, recordName: String) {
         self.recordTypeName = recordTypeName
         self.zoneID = zoneID
         self.recordName = recordName
@@ -91,8 +91,8 @@ extension _CloudKitRecordEncoder: Encoder {
     var record: CKRecord {
         if let existingRecord = container?.record { return existingRecord }
 
-        let zid = zoneID ?? CKRecordZoneID(zoneName: CKRecordZoneDefaultName, ownerName: CKCurrentUserDefaultName)
-        let rid = CKRecordID(recordName: recordName, zoneID: zid)
+        let zid = zoneID ?? CKRecordZone.ID(zoneName: CKRecordZone.ID.defaultZoneName, ownerName: CKCurrentUserDefaultName)
+        let rid = CKRecord.ID(recordName: recordName, zoneID: zid)
 
         return CKRecord(recordType: recordTypeName, recordID: rid)
     }
@@ -123,14 +123,14 @@ extension _CloudKitRecordEncoder: Encoder {
     }
 }
 
-protocol CloudKitRecordEncodingContainer: class {
+protocol CloudKitRecordEncodingContainer: AnyObject {
     var record: CKRecord? { get }
 }
 
 extension _CloudKitRecordEncoder {
     final class KeyedContainer<Key> where Key: CodingKey {
         let recordTypeName: String
-        let zoneID: CKRecordZoneID?
+        let zoneID: CKRecordZone.ID?
         let recordName: String
         var metaRecord: CKRecord?
         var codingPath: [CodingKey]
@@ -139,7 +139,7 @@ extension _CloudKitRecordEncoder {
         fileprivate var storage: [String: CKRecordValue] = [:]
 
         init(recordTypeName: String,
-             zoneID: CKRecordZoneID?,
+             zoneID: CKRecordZone.ID?,
              recordName: String,
              codingPath: [CodingKey],
              userInfo: [CodingUserInfoKey : Any])
@@ -164,7 +164,7 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
                 throw CloudKitRecordEncodingError.systemFieldsDecode("\(_CKSystemFieldsKeyName) property must be of type Data")
             }
 
-            prepareMetaRecord(with: systemFields)
+            try prepareMetaRecord(with: systemFields)
 
             return
         }
@@ -186,14 +186,14 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
         }
     }
 
-    private func produceReference(for value: CustomCloudKitEncodable) throws -> CKReference {
+    private func produceReference(for value: CustomCloudKitEncodable) throws -> CKRecord.Reference {
         let childRecord = try CloudKitRecordEncoder().encode(value)
 
-        return CKReference(record: childRecord, action: .deleteSelf)
+        return CKRecord.Reference(record: childRecord, action: .deleteSelf)
     }
 
-    private func prepareMetaRecord(with systemFields: Data) {
-        let coder = NSKeyedUnarchiver(forReadingWith: systemFields)
+    private func prepareMetaRecord(with systemFields: Data) throws {
+        let coder = try NSKeyedUnarchiver(forReadingFrom: systemFields)
         coder.requiresSecureCoding = true
         metaRecord = CKRecord(coder: coder)
         coder.finishDecoding()
@@ -226,9 +226,9 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
 
 extension _CloudKitRecordEncoder.KeyedContainer: CloudKitRecordEncodingContainer {
 
-    var recordID: CKRecordID {
-        let zid = zoneID ?? CKRecordZoneID(zoneName: CKRecordZoneDefaultName, ownerName: CKCurrentUserDefaultName)
-        return CKRecordID(recordName: recordName, zoneID: zid)
+    var recordID: CKRecord.ID {
+        let zid = zoneID ?? CKRecordZone.ID(zoneName: CKRecordZone.ID.defaultZoneName, ownerName: CKCurrentUserDefaultName)
+        return CKRecord.ID(recordName: recordName, zoneID: zid)
     }
 
     var record: CKRecord? {

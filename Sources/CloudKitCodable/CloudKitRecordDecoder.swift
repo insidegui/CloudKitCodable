@@ -54,7 +54,7 @@ extension _CloudKitRecordDecoder: Decoder {
     }
 }
 
-protocol CloudKitRecordDecodingContainer: class {
+protocol CloudKitRecordDecodingContainer: AnyObject {
     var codingPath: [CodingKey] { get set }
 
     var userInfo: [CodingUserInfoKey : Any] { get }
@@ -145,7 +145,7 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
 
     private func decodeURL(forKey key: Key) throws -> URL {
         if let asset = record[key.stringValue] as? CKAsset {
-            return decodeURL(from: asset)
+            return try decodeURL(from: asset)
         }
 
         guard let str = record[key.stringValue] as? String else {
@@ -161,8 +161,13 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
         return url
     }
 
-    private func decodeURL(from asset: CKAsset) -> URL {
-        return asset.fileURL
+    private func decodeURL(from asset: CKAsset) throws -> URL {
+        guard let url = asset.fileURL else {
+            let context = DecodingError.Context(codingPath: codingPath, debugDescription: "URL value not found")
+            throw DecodingError.valueNotFound(URL.self, context)
+        }
+
+        return url
     }
 
     private func decodeBool(forKey key: Key) throws -> Bool {
@@ -175,13 +180,11 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
     }
 
     private func decodeSystemFields() -> Data {
-        let data = NSMutableData()
-        let coder = NSKeyedArchiver.init(forWritingWith: data)
-        coder.requiresSecureCoding = true
+        let coder = NSKeyedArchiver.init(requiringSecureCoding: true)
         record.encodeSystemFields(with: coder)
         coder.finishEncoding()
 
-        return data as Data
+        return coder.encodedData
     }
 
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
