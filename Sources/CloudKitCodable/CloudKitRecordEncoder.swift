@@ -181,6 +181,10 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
             throw CloudKitRecordEncodingError.referencesNotSupported(key.stringValue)
         } else if let ckValue = value as? CKRecordValue {
             return ckValue
+        } else if let stringValue = (value as? any CloudKitStringEnum)?.rawValue {
+            return stringValue as NSString
+        } else if let intValue = (value as? any CloudKitIntEnum)?.rawValue {
+            return NSNumber(value: Int(intValue))
         } else {
             throw CloudKitRecordEncodingError.unsupportedValueForKey(key.stringValue)
         }
