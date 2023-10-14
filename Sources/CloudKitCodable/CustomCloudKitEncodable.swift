@@ -37,3 +37,15 @@ public protocol CustomCloudKitDecodable: CloudKitRecordRepresentable & Decodable
 }
 
 public protocol CustomCloudKitCodable: CustomCloudKitEncodable & CustomCloudKitDecodable { }
+
+public protocol CloudKitEnum {
+    static var cloudKitFallbackCase: Self? { get }
+}
+
+public extension CloudKitEnum where Self: CaseIterable {
+    static var cloudKitFallbackCase: Self? { allCases.first }
+}
+
+public protocol CloudKitStringEnum: Codable, RawRepresentable, CloudKitEnum where RawValue == String { }
+
+public protocol CloudKitIntEnum: Codable, RawRepresentable, CloudKitEnum where RawValue == Int { }

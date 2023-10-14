@@ -53,4 +53,15 @@ final class CloudKitRecordDecoderTests: XCTestCase {
         XCTAssert(samePersonDecoded.cloudKitIdentifier == "MY-ID")
     }
 
+    func testEnumRoundtrip() throws {
+        let model = TestModelWithEnum.allEnumsPopulated
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        var sameModelDecoded = try CloudKitRecordDecoder().decode(TestModelWithEnum.self, from: record)
+        sameModelDecoded.cloudKitSystemFields = nil
+
+        XCTAssertEqual(sameModelDecoded, model)
+    }
+
 }

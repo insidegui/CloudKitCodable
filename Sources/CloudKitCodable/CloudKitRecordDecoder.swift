@@ -135,9 +135,40 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
             return try decodeURL(forKey: key) as! T
         }
 
+        func typeMismatch(_ message: String) -> DecodingError {
+            let context = DecodingError.Context(
+                codingPath: codingPath,
+                debugDescription: message
+            )
+            return DecodingError.typeMismatch(type, context)
+        }
+
+        if let stringEnumType = T.self as? any CloudKitStringEnum.Type {
+            guard let stringValue = record[key.stringValue] as? String else {
+                throw typeMismatch("Expected to decode a rawValue String for \"\(String(describing: type))\"")
+            }
+            guard let enumValue = stringEnumType.init(rawValue: stringValue) ?? stringEnumType.cloudKitFallbackCase else {
+                #if DEBUG
+                throw typeMismatch("Failed to construct enum \"\(String(describing: type))\" from String \"\(stringValue)\"")
+                #else
+                throw typeMismatch("Failed to construct enum \"\(String(describing: type))\" from String value")
+                #endif
+            }
+            return enumValue as! T
+        }
+
+        if let intEnumType = T.self as? any CloudKitIntEnum.Type {
+            guard let intValue = record[key.stringValue] as? Int else {
+                throw typeMismatch("Expected to decode a rawValue Int for \"\(String(describing: type))\"")
+            }
+            guard let enumValue = intEnumType.init(rawValue: intValue) ?? intEnumType.cloudKitFallbackCase else {
+                throw typeMismatch("Failed to construct enum \"\(String(describing: type))\" from value \"\(intValue)\"")
+            }
+            return enumValue as! T
+        }
+
         guard let value = record[key.stringValue] as? T else {
-            let context = DecodingError.Context(codingPath: codingPath, debugDescription: "CKRecordValue couldn't be converted to \(String(describing: type))'")
-            throw DecodingError.typeMismatch(type, context)
+            throw typeMismatch("CKRecordValue couldn't be converted to \"\(String(describing: type))\"")
         }
 
         return value

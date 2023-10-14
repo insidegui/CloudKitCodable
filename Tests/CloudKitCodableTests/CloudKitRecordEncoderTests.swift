@@ -49,5 +49,27 @@ final class CloudKitRecordEncoderTests: XCTestCase {
         XCTAssert(record.recordID.zoneID == zoneID)
         XCTAssert(record.recordID.recordName == "MY-ID")
     }
-    
+
+    func testEnumEncoding() throws {
+        let model = TestModelWithEnum.allEnumsPopulated
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        XCTAssertEqual(record["enumProperty"], "enumCase3")
+        XCTAssertEqual(record["optionalEnumProperty"], "enumCase2")
+        XCTAssertEqual(record["intEnumProperty"], 1)
+        XCTAssertEqual(record["optionalIntEnumProperty"], 2)
+    }
+
+    func testEnumEncodingNilValue() throws {
+        let model = TestModelWithEnum.optionalEnumNil
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        XCTAssertEqual(record["enumProperty"], "enumCase3")
+        XCTAssertNil(record["optionalEnumProperty"])
+        XCTAssertEqual(record["intEnumProperty"], 1)
+        XCTAssertNil(record["optionalIntEnumProperty"])
+    }
+
 }
