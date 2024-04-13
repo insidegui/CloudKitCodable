@@ -75,6 +75,28 @@ final class CloudKitRecordDecoderTests: XCTestCase {
         XCTAssertEqual(sameModelDecoded, model)
     }
 
+    func testNestedRoundtripOptionalChild() throws {
+        let model = TestParentOptionalChild.test
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        var sameModelDecoded = try CloudKitRecordDecoder().decode(TestParentOptionalChild.self, from: record)
+        sameModelDecoded.cloudKitSystemFields = nil
+
+        XCTAssertEqual(sameModelDecoded, model)
+    }
+
+    func testNestedRoundtripOptionalChildNil() throws {
+        let model = TestParentOptionalChild.testNilChild
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        var sameModelDecoded = try CloudKitRecordDecoder().decode(TestParentOptionalChild.self, from: record)
+        sameModelDecoded.cloudKitSystemFields = nil
+
+        XCTAssertEqual(sameModelDecoded, model)
+    }
+
     func testNestedRoundtripCollection() throws {
         let model = TestParentCollection.test
 

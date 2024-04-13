@@ -12,6 +12,17 @@ struct TestParent: CustomCloudKitCodable, Hashable {
     var dataProperty: Data
 }
 
+struct TestParentOptionalChild: CustomCloudKitCodable, Hashable {
+    struct TestOptionalChild: Codable, Hashable {
+        var name: String
+        var value: String
+    }
+    var cloudKitSystemFields: Data?
+    var parentName: String
+    var child: TestOptionalChild?
+    var dataProperty: Data
+}
+
 struct TestParentCollection: CustomCloudKitCodable, Hashable {
     struct TestCollectionChild: Codable, Hashable {
         var name: String
@@ -32,6 +43,22 @@ extension TestParent {
             name: "Hello Child Name",
             value: "Hello Child Value"
         ),
+        dataProperty: Data([0xFF])
+    )
+}
+
+extension TestParentOptionalChild {
+    static let test = TestParentOptionalChild(
+        parentName: "Hello Parent",
+        child: .init(
+            name: "Hello Optional Child Name",
+            value: "Hello Optional Child Value"
+        ),
+        dataProperty: Data([0xFF])
+    )
+    static let testNilChild = TestParentOptionalChild(
+        parentName: "Hello Parent",
+        child: nil,
         dataProperty: Data([0xFF])
     )
 }

@@ -85,6 +85,28 @@ final class CloudKitRecordEncoderTests: XCTestCase {
         XCTAssertEqual(record["child"], encodedChild)
     }
 
+    func testNestedEncodingOptional() throws {
+        let model = TestParentOptionalChild.test
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        let encodedChild = """
+        {"name":"Hello Optional Child Name","value":"Hello Optional Child Value"}
+        """.UTF8Data()
+
+        XCTAssertEqual(record["parentName"], "Hello Parent")
+        XCTAssertEqual(record["child"], encodedChild)
+    }
+
+    func testNestedEncodingOptionalNil() throws {
+        let model = TestParentOptionalChild.testNilChild
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        XCTAssertEqual(record["parentName"], "Hello Parent")
+        XCTAssertNil(record["child"])
+    }
+
     func testNestedEncodingCollection() throws {
         let model = TestParentCollection.test
 
