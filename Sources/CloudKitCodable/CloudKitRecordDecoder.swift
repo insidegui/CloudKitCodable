@@ -167,11 +167,21 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
             return enumValue as! T
         }
 
-        guard let value = record[key.stringValue] as? T else {
-            throw typeMismatch("CKRecordValue couldn't be converted to \"\(String(describing: type))\"")
-        }
+        /// This will attempt to JSON-decode child values for `Data` fields, but it's important to check that the type of the field
+        /// is not `Data`, otherwise we'd be trying to decode JSON from any data field, even those that do not contain JSON-encoded children.
+        if T.self != Data.self,
+           let nestedData = record[key.stringValue] as? Data
+        {
+            let value = try JSONDecoder.nestedCloudKitValue.decode(T.self, from: nestedData)
 
-        return value
+            return value
+        } else {
+            guard let value = record[key.stringValue] as? T else {
+                throw typeMismatch("CKRecordValue couldn't be converted to \"\(String(describing: type))\"")
+            }
+
+            return value
+        }
     }
 
     private func decodeURL(forKey key: Key) throws -> URL {
@@ -239,3 +249,7 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
 }
 
 extension _CloudKitRecordDecoder.KeyedContainer: CloudKitRecordDecodingContainer {}
+
+private extension JSONDecoder {
+    static let nestedCloudKitValue = JSONDecoder()
+}

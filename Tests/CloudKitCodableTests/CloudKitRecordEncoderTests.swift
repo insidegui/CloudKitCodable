@@ -72,4 +72,34 @@ final class CloudKitRecordEncoderTests: XCTestCase {
         XCTAssertNil(record["optionalIntEnumProperty"])
     }
 
+    func testNestedEncoding() throws {
+        let model = TestParent.test
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        let encodedChild = """
+        {"name":"Hello Child Name","value":"Hello Child Value"}
+        """.UTF8Data()
+
+        XCTAssertEqual(record["parentName"], "Hello Parent")
+        XCTAssertEqual(record["child"], encodedChild)
+    }
+
+    func testNestedEncodingCollection() throws {
+        let model = TestParentCollection.test
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        let encodedChildren = """
+        [{"name":"0 - Hello Child Name","value":"0 - Hello Child Value"},{"name":"1 - Hello Child Name","value":"1 - Hello Child Value"},{"name":"2 - Hello Child Name","value":"2 - Hello Child Value"}]
+        """.UTF8Data()
+
+        XCTAssertEqual(record["parentName"], "Hello Parent Collection")
+        XCTAssertEqual(record["children"], encodedChildren)
+    }
+
+}
+
+extension String {
+    func UTF8Data() -> Data { Data(utf8) }
 }

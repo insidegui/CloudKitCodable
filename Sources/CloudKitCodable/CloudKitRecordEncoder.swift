@@ -13,6 +13,7 @@ public enum CloudKitRecordEncodingError: Error {
     case unsupportedValueForKey(String)
     case systemFieldsDecode(String)
     case referencesNotSupported(String)
+    case dataFieldTooLarge(key: String, size: Int)
 
     public var localizedDescription: String {
         switch self {
@@ -26,6 +27,8 @@ public enum CloudKitRecordEncodingError: Error {
             return "Failed to process \(_CKSystemFieldsKeyName): \(info)"
         case .referencesNotSupported(let key):
             return "References are not supported by CloudKitRecordEncoder yet. Key: \(key)."
+        case .dataFieldTooLarge(let key, let size):
+            return "Value for child data \"\(key)\" of \(size) bytes exceeds maximum of \(CKRecord.maxDataSize) bytes"
         }
     }
 }
@@ -175,10 +178,16 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
     private func produceCloudKitValue<T>(for value: T, withKey key: Key) throws -> CKRecordValue where T : Encodable {
         if let urlValue = value as? URL {
             return produceCloudKitValue(for: urlValue)
-        } else if value is CustomCloudKitEncodable {
-            throw CloudKitRecordEncodingError.referencesNotSupported(key.stringValue)
-        } else if value is [CustomCloudKitEncodable] {
-            throw CloudKitRecordEncodingError.referencesNotSupported(key.stringValue)
+        } else if let collection = value as? [Any] {
+            /// The `value as? CKRecordValue` cast in the next `else if` will always succeed for arrays,
+            /// so here we check that the value is actually an array where the elements conform to `CKRecordValue`,
+            /// then return it as an `NSArray`. Otherwise, this is an array with arbitrary `Encodable` elements,
+            /// in which case they'll be stored as a single data field with the JSON-encoded representation.
+            if let ckValueArray = collection as? [CKRecordValue] {
+                return ckValueArray as NSArray
+            } else {
+                return try encodedChildValue(for: value, withKey: key)
+            }
         } else if let ckValue = value as? CKRecordValue {
             return ckValue
         } else if let stringValue = (value as? any CloudKitStringEnum)?.rawValue {
@@ -186,14 +195,18 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
         } else if let intValue = (value as? any CloudKitIntEnum)?.rawValue {
             return NSNumber(value: Int(intValue))
         } else {
-            throw CloudKitRecordEncodingError.unsupportedValueForKey(key.stringValue)
+            return try encodedChildValue(for: value, withKey: key)
         }
     }
 
-    private func produceReference(for value: CustomCloudKitEncodable) throws -> CKRecord.Reference {
-        let childRecord = try CloudKitRecordEncoder().encode(value)
+    private func encodedChildValue<T>(for value: T, withKey key: Key) throws -> CKRecordValue where T : Encodable {
+        let encodedChild = try JSONEncoder.nestedCloudKitValue.encode(value)
 
-        return CKRecord.Reference(record: childRecord, action: .deleteSelf)
+        guard encodedChild.count < CKRecord.maxDataSize else {
+            throw CloudKitRecordEncodingError.dataFieldTooLarge(key: key.stringValue, size: encodedChild.count)
+        }
+
+        return encodedChild as NSData
     }
 
     private func prepareMetaRecord(with systemFields: Data) throws {
@@ -261,4 +274,19 @@ extension _CloudKitRecordEncoder.KeyedContainer: CloudKitRecordEncodingContainer
         return output
     }
 
+}
+
+private extension JSONEncoder {
+    static let nestedCloudKitValue: JSONEncoder = {
+        let e = JSONEncoder()
+        e.outputFormatting = [.withoutEscapingSlashes, .sortedKeys]
+        return e
+    }()
+}
+
+private extension CKRecord {
+    /// The entire `CKRecord` can't exceed 1MB, but since we don't really know how large the whole
+    /// record is, we just check data fields to ensure that they fit within the limit. This doesn't prevent
+    /// the record from exceeding the 1MB limit, but at least catches the most egregious attempts.
+    static let maxDataSize = 1_000_000
 }
