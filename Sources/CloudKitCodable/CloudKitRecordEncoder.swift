@@ -200,13 +200,18 @@ extension _CloudKitRecordEncoder.KeyedContainer: KeyedEncodingContainerProtocol 
     }
 
     private func encodedChildValue<T>(for value: T, withKey key: Key) throws -> CKRecordValue where T : Encodable {
-        let encodedChild = try JSONEncoder.nestedCloudKitValue.encode(value)
+        if let customAssetValue = value as? CloudKitAssetValue {
+            let asset = try customAssetValue.createAsset()
+            return asset
+        } else {
+            let encodedChild = try JSONEncoder.nestedCloudKitValue.encode(value)
 
-        guard encodedChild.count < CKRecord.maxDataSize else {
-            throw CloudKitRecordEncodingError.dataFieldTooLarge(key: key.stringValue, size: encodedChild.count)
+            guard encodedChild.count < CKRecord.maxDataSize else {
+                throw CloudKitRecordEncodingError.dataFieldTooLarge(key: key.stringValue, size: encodedChild.count)
+            }
+
+            return encodedChild as NSData
         }
-
-        return encodedChild as NSData
     }
 
     private func prepareMetaRecord(with systemFields: Data) throws {
@@ -276,10 +281,24 @@ extension _CloudKitRecordEncoder.KeyedContainer: CloudKitRecordEncodingContainer
 
 }
 
-private extension JSONEncoder {
+extension JSONEncoder {
     static let nestedCloudKitValue: JSONEncoder = {
         let e = JSONEncoder()
         e.outputFormatting = [.withoutEscapingSlashes, .sortedKeys]
+        return e
+    }()
+}
+
+extension PropertyListEncoder {
+    static let nestedCloudKitValueBinary: PropertyListEncoder = {
+        let e = PropertyListEncoder()
+        e.outputFormat = .binary
+        return e
+    }()
+
+    static let nestedCloudKitValueXML: PropertyListEncoder = {
+        let e = PropertyListEncoder()
+        e.outputFormat = .xml
         return e
     }()
 }
@@ -289,4 +308,19 @@ private extension CKRecord {
     /// record is, we just check data fields to ensure that they fit within the limit. This doesn't prevent
     /// the record from exceeding the 1MB limit, but at least catches the most egregious attempts.
     static let maxDataSize = 1_000_000
+}
+
+// MARK: - CloudKitAssetValue Support
+
+private extension CloudKitAssetValue {
+    func createAsset() throws -> CKAsset {
+        let data = try encoded()
+
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(filename)
+
+        try data.write(to: tempURL)
+
+        return CKAsset(fileURL: tempURL)
+    }
 }

@@ -120,6 +120,30 @@ final class CloudKitRecordEncoderTests: XCTestCase {
         XCTAssertEqual(record["children"], encodedChildren)
     }
 
+    func testCustomAssetEncoding() throws {
+        let model = TestModelCustomAsset.test
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        XCTAssertEqual(record["title"], model.title)
+        guard let asset = record["contents"] as? CKAsset else {
+            XCTFail("Expected CloudKitAssetValue to be encoded as CKAsset")
+            return
+        }
+
+        let url = asset.fileURL!
+
+        XCTAssertEqual(url.lastPathComponent, "Contents-MyID.json")
+
+        let encodedAsset = """
+        {"contentProperty1":"Prop1","contentProperty2":"Prop2","contentProperty3":"Prop3","contentProperty4":"Prop4","id":"MyID"}
+        """.UTF8Data()
+
+        let assetData = try Data(contentsOf: url)
+
+        XCTAssertEqual(assetData, encodedAsset)
+    }
+
 }
 
 extension String {

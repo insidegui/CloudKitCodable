@@ -175,6 +175,14 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
             let value = try JSONDecoder.nestedCloudKitValue.decode(T.self, from: nestedData)
 
             return value
+        } else if let customAssetType = type as? CloudKitAssetValue.Type {
+            guard let ckAsset = record[key.stringValue] as? CKAsset else {
+                throw typeMismatch("CKRecord value for CloudKitAssetValue field must be a CKAsset")
+            }
+
+            let value = try decodeCustomAsset(customAssetType, from: ckAsset, key: key)
+
+            return value as! T
         } else {
             guard let value = record[key.stringValue] as? T else {
                 throw typeMismatch("CKRecordValue couldn't be converted to \"\(String(describing: type))\"")
@@ -200,6 +208,18 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
         }
 
         return url
+    }
+
+    private func decodeCustomAsset<T: CloudKitAssetValue>(_ type: T.Type, from asset: CKAsset, key: Key) throws -> T {
+        guard let url = asset.fileURL else {
+            throw DecodingError.dataCorruptedError(forKey: key, in: self, debugDescription: "CKAsset has no fileURL")
+        }
+
+        let contentType = (try url.resourceValues(forKeys: [.contentTypeKey])).contentType ?? T.preferredContentType
+
+        let data = try Data(contentsOf: url)
+
+        return try T.decoded(from: data, type: contentType)
     }
 
     private func decodeURL(from asset: CKAsset) throws -> URL {
@@ -250,6 +270,10 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
 
 extension _CloudKitRecordDecoder.KeyedContainer: CloudKitRecordDecodingContainer {}
 
-private extension JSONDecoder {
+extension JSONDecoder {
     static let nestedCloudKitValue = JSONDecoder()
+}
+
+extension PropertyListDecoder {
+    static let nestedCloudKitValue = PropertyListDecoder()
 }

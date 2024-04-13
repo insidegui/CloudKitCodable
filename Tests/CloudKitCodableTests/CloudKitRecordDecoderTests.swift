@@ -107,4 +107,15 @@ final class CloudKitRecordDecoderTests: XCTestCase {
 
         XCTAssertEqual(sameModelDecoded, model)
     }
+
+    func testCustomAssetRoundtrip() throws {
+        let model = TestModelCustomAsset.test
+
+        let record = try CloudKitRecordEncoder().encode(model)
+
+        var sameModelDecoded = try CloudKitRecordDecoder().decode(TestModelCustomAsset.self, from: record)
+        sameModelDecoded.cloudKitSystemFields = nil
+
+        XCTAssertEqual(sameModelDecoded, model)
+    }
 }
