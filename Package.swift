@@ -5,9 +5,9 @@ let package = Package(
     name: "CloudKitCodable",
     platforms: [
         .macOS(.v11),
-        .iOS(.v13),
-        .tvOS(.v13),
-        .watchOS(.v4)
+        .iOS(.v14),
+        .tvOS(.v14),
+        .watchOS(.v5)
     ],
     products: [
         .library(name: "CloudKitCodable", targets: ["CloudKitCodable"])
