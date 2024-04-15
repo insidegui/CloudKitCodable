@@ -9,12 +9,28 @@
 import Foundation
 import CloudKit
 
+/// A decoder that takes a `CKRecord` and produces a value conforming to ``CustomCloudKitDecodable``.
+///
+/// You use an instance of ``CloudKitRecordDecoder`` in order to transform a `CKRecord` downloaded from CloudKit into a value of your custom data type.
 final public class CloudKitRecordDecoder {
+
+    /// Decodes a value conforming to ``CustomCloudKitDecodable`` from a `CKRecord` fetched from CloudKit.
+    /// - Parameters:
+    ///   - type: The type of value.
+    ///   - record: The record that was fetched from CloudKit.
+    /// - Returns: The decoded value with its properties matching those of the `CKRecord`.
+    ///
+    /// Once decoded from a `CKRecord`, your value will have its ``CloudKitRecordRepresentable/cloudKitSystemFields`` set to the corresponding
+    /// metadata from the `CKRecord`. When encoding the same value again, such as when updating a record, ``CloudKitRecordEncoder`` will use this encoded metadata
+    /// to produce a record that CloudKit will recognize as being the same "instance".
     public func decode<T>(_ type: T.Type, from record: CKRecord) throws -> T where T : Decodable {
         let decoder = _CloudKitRecordDecoder(record: record)
         return try T(from: decoder)
     }
 
+    /// Creates a new instance of the decoder.
+    ///
+    /// - Tip: You may safely reuse an instance of ``CloudKitRecordDecoder`` for multiple operations.
     public init() { }
 }
 

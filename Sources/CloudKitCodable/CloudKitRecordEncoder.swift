@@ -9,12 +9,22 @@
 import Foundation
 import CloudKit
 
+/// Errors that can occur when encoding a custom type to `CKRecord`.
 public enum CloudKitRecordEncodingError: Error {
+    /// A given model property contains a value that can't be encoded into the `CKRecord`.
     case unsupportedValueForKey(String)
+    /// The existing value in ``CloudKitRecordRepresentable/cloudKitSystemFields`` couldn't be decoded
+    /// for constructing an updated version of the corresponding `CKRecord`.
     case systemFieldsDecode(String)
+    @available(*, deprecated, message: "This is no longer thrown and is kept for source compatibility.")
     case referencesNotSupported(String)
+    /// A `Data` property or a nested `Codable` value ended up being too large for encoding into a `CKRecord`.
+    ///
+    /// - Tip: If you're experiencing this error when encoding a model that has a nested `Codable` property,
+    /// consider adopting ``CloudKitAssetValue`` so that the property can be encoded as a `CKAsset` instead.
     case dataFieldTooLarge(key: String, size: Int)
 
+    /// A description of the encoding error.
     public var localizedDescription: String {
         switch self {
         case .unsupportedValueForKey(let key):
@@ -33,9 +43,28 @@ public enum CloudKitRecordEncodingError: Error {
     }
 }
 
+/// An encoder that takes a value conforming to ``CustomCloudKitEncodable`` and produces a `CKRecord`.
+///
+/// You use an instance of ``CloudKitRecordEncoder`` in order to transform your custom data type into a `CKRecord` before uploading it to CloudKit.
 public class CloudKitRecordEncoder {
-    public var zoneID: CKRecordZone.ID?
 
+    /// The CloudKit zone identifier that will be associated with the record created by this encoder.
+    ///
+    /// - Note: This property is ignored when encoding a value with its ``CloudKitRecordRepresentable/cloudKitSystemFields`` property set.
+    /// When that's the case, the zone ID is read from the record metadata encoded in the system fields.
+    public var zoneID: CKRecordZone.ID?
+    
+    /// Encodes a value conforming to ``CustomCloudKitEncodable``, turning it into a `CKRecord`.
+    /// - Parameter value: The value to be encoded.
+    /// - Returns: A `CKRecord` representing the value.
+    ///
+    /// Your custom data type that conforms to ``CustomCloudKitEncodable`` is turned into a `CKRecord` where each record field
+    /// represents a property of your type, according to its `CodingKeys`.
+    ///
+    /// If the encoder is initialized with a ``zoneID``, then the ID of the `CKRecord` will include that zone ID.
+    ///
+    /// When encoding a value that's already been through the CloudKit servers, its ``CloudKitRecordRepresentable/cloudKitSystemFields`` should be available,
+    /// in which case the encoder will construct a `CKRecord` with the metadata corresponding to the record on the server.
     public func encode(_ value: Encodable) throws -> CKRecord {
         let type = recordTypeName(for: value)
         let name = recordName(for: value)
@@ -62,7 +91,12 @@ public class CloudKitRecordEncoder {
             return UUID().uuidString
         }
     }
-
+    
+    /// Initializes the encoder.
+    /// - Parameter zoneID: If provided, the `CKRecord` produced will have its record ID
+    /// set to the specified zone. Uses the default CloudKit zone if the zone is not specified.
+    ///
+    /// - Tip: You may safely reuse an instance of ``CloudKitRecordEncoder`` for multiple operations.
     public init(zoneID: CKRecordZone.ID? = nil) {
         self.zoneID = zoneID
     }
