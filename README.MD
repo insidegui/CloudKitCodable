@@ -4,8 +4,6 @@
 
 This project implements a `CloudKitRecordEncoder` and a `CloudKitRecordDecoder` so you can easily convert your custom data structure to a `CKRecord` and convert your `CKRecord` back to your custom data structure.
 
-**Be aware this is an initial implementation that's not being used in production (yet) and it doesn't support nesting. Nested values would have to be encoded as `CKReference` and I haven't implemented that yet (feel free to open a PR 🤓).**
-
 ## Usage
 
 ### `CustomCloudKitCodable`
@@ -28,7 +26,19 @@ var cloudKitRecordType: String { get }
 
 This property should return the record type for your custom type. It's implemented automatically to return the name of the type, you only need to implement this if you need to customize the record type.
 
-### URLs
+### Data Types
+
+CloudKit imposes some limits on the types of data that can be stored as part of a `CKRecord`. CloudKitCodable attempts to use the best supported representation for any given property, but you should be aware of the limitations.
+
+#### Enumerations
+
+CloudKitCodable can encode and decode `enum` properties that are backed by either a `String` or `Int` raw value.
+
+In order for the enum encoding to work, your enum must conform to `CloudKitStringEnum` or `CloudKitIntEnum`, the only requirement being a static `cloudKitFallbackCase` property that determines the default value for the property in case the `CKRecord` contains a raw value that can't initialize the enum.
+
+This is important because if you add new cases to the enum, then it's possible for an older version of your app to get an enum case that it doesn't know about.
+
+#### URLs
 There's special handling for URLs because of the way CloudKit works with files. If you have a property that's a remote `URL` (i.e. a website), it's encoded as a `String` (CloudKit doesn't support URLs natively) and decoded back as a `URL`. 
 
 If your property is a `URL` and it contains a `URL` to a local file, it is encoded as a `CKAsset`, the file will be automatically uploaded to CloudKit when you save the containing record and downloaded when you get the record from the cloud. The decoded `URL` will contain the `URL` for the location on disk where CloudKit has downloaded the file.
@@ -83,19 +93,19 @@ do {
 }
 ```
 
-## Requirements
+## Minimum Deployment Targets
 
-- iOS 13.0+
-- macOS 11.0+
-- Xcode 13.2+
+- iOS 14
+- tvOS 14
+- watchOS 5
+- macOS 11
+- Xcode 15 (recommended)
 
 ## Installation
 
 ### Swift Package Manager
 
-[Swift Package Manager](https://www.swift.org/package-manager) is a tool for automating the distribution of Swift code and is integrated into the Swift build system.
-
-Once you have your Swift package set up, adding CloudKitCodable as a dependency is as easy as adding it to the dependencies value of your `Package.swift`.
+Add CloudKitCodable to your `Package.swift`:
 
 ```swift
 dependencies: [
