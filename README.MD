@@ -2,40 +2,15 @@
 
 [![Badge showing the current build status](https://github.com/insidegui/CloudKitCodable/actions/workflows/swift-package.yml/badge.svg)](https://github.com/insidegui/CloudKitCodable/actions/workflows/swift-package.yml)
 
-This project implements a `CloudKitRecordEncoder` and a `CloudKitRecordDecoder` so you can easily convert your custom data structure to a `CKRecord` and convert your `CKRecord` back to your custom data structure.
-
-**Be aware this is an initial implementation that's not being used in production (yet) and it doesn't support nesting. Nested values would have to be encoded as `CKReference` and I haven't implemented that yet (feel free to open a PR 🤓).**
+This project implements `CloudKitRecordEncoder` and `CloudKitRecordDecoder`, allowing for custom data types to be converted to/from `CKRecord` automatically.
 
 ## Usage
 
-### `CustomCloudKitCodable`
-
-The types you want to convert to/from `CKRecord` must implement the `CustomCloudKitCodable` protocol. This is necessary because unlike most implementations of encoders/decoders, we are not converting to/from `Data`, but to/from `CKRecord`, which has some special requirements.
-
-There are also two other protocols: `CustomCloudKitEncodable` and `CustomCloudKitDecodable`. You can use those if you only need either encoding or decoding respectively.
-
-The protocol requires two properties on the type you want to convert to/from `CKRecord`:
-
-```swift
-var cloudKitSystemFields: Data? { get }
-```
-
-This will be used to store the system fields for the `CKRecord` when decoding. The system fields contain metadata for the record such as its unique identifier and they're very important when syncing.
-
-```swift
-var cloudKitRecordType: String { get }
-```
-
-This property should return the record type for your custom type. It's implemented automatically to return the name of the type, you only need to implement this if you need to customize the record type.
-
-### URLs
-There's special handling for URLs because of the way CloudKit works with files. If you have a property that's a remote `URL` (i.e. a website), it's encoded as a `String` (CloudKit doesn't support URLs natively) and decoded back as a `URL`. 
-
-If your property is a `URL` and it contains a `URL` to a local file, it is encoded as a `CKAsset`, the file will be automatically uploaded to CloudKit when you save the containing record and downloaded when you get the record from the cloud. The decoded `URL` will contain the `URL` for the location on disk where CloudKit has downloaded the file.
+For details on how to use CloudKitCodable, please check the included documentation.
 
 ### Example
 
-Let's say you have a `Person` model you want to sync to CloudKit. This is what the model would look like:
+Declaring a model that can be encoded as a `CKRecord`:
 
 ```swift
 struct Person: CustomCloudKitCodable {
@@ -48,19 +23,10 @@ struct Person: CustomCloudKitCodable {
 }
 ```
 
-Notice I didn't implement `cloudKitRecordType`, in that case, the `CKRecord` type for this model will be `Person` (the name of the type itself).
-
-Now, before saving the record to CloudKit, we encode it:
+Creating a `CKRecord` from a `CustomCloudKitCodable` type:
 
 ```swift
-let rambo = Person(
-    cloudKitSystemFields: nil,
-    name: "Guilherme Rambo",
-    age: 26,
-    website: URL(string:"https://guilhermerambo.me")!,
-    avatar: URL(fileURLWithPath: "/Users/inside/Pictures/avatar.png"),
-    isDeveloper: true
-)
+let rambo = Person(...)
 
 do {
    let record = try CloudKitRecordEncoder().encode(rambo)
@@ -70,9 +36,7 @@ do {
 }
 ```
 
-Since `avatar` points to a local file, the corresponding file will be uploaded as a `CKAsset` when the record is saved to CloudKit and downloaded back when the record is retrieved.
-
-To decode the record:
+Decoding a `CustomCloudKitCodable` type from a `CKRecord`:
 
 ```swift
 let record = // record obtained from CloudKit
@@ -83,23 +47,23 @@ do {
 }
 ```
 
-## Requirements
+## Minimum Deployment Targets
 
-- iOS 13.0+
-- macOS 11.0+
-- Xcode 13.2+
+- iOS 14
+- tvOS 14
+- watchOS 5
+- macOS 11
+- Xcode 15 (recommended)
 
 ## Installation
 
 ### Swift Package Manager
 
-[Swift Package Manager](https://www.swift.org/package-manager) is a tool for automating the distribution of Swift code and is integrated into the Swift build system.
-
-Once you have your Swift package set up, adding CloudKitCodable as a dependency is as easy as adding it to the dependencies value of your `Package.swift`.
+Add CloudKitCodable to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/insidegui/CloudKitCodable.git", from: "0.2.0")
+    .package(url: "https://github.com/insidegui/CloudKitCodable.git", from: "0.3.0")
 ]
 ```
 
