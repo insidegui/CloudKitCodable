@@ -2,50 +2,15 @@
 
 [![Badge showing the current build status](https://github.com/insidegui/CloudKitCodable/actions/workflows/swift-package.yml/badge.svg)](https://github.com/insidegui/CloudKitCodable/actions/workflows/swift-package.yml)
 
-This project implements a `CloudKitRecordEncoder` and a `CloudKitRecordDecoder` so you can easily convert your custom data structure to a `CKRecord` and convert your `CKRecord` back to your custom data structure.
+This project implements `CloudKitRecordEncoder` and `CloudKitRecordDecoder`, allowing for custom data types to be converted to/from `CKRecord` automatically.
 
 ## Usage
 
-### `CustomCloudKitCodable`
-
-The types you want to convert to/from `CKRecord` must implement the `CustomCloudKitCodable` protocol. This is necessary because unlike most implementations of encoders/decoders, we are not converting to/from `Data`, but to/from `CKRecord`, which has some special requirements.
-
-There are also two other protocols: `CustomCloudKitEncodable` and `CustomCloudKitDecodable`. You can use those if you only need either encoding or decoding respectively.
-
-The protocol requires two properties on the type you want to convert to/from `CKRecord`:
-
-```swift
-var cloudKitSystemFields: Data? { get }
-```
-
-This will be used to store the system fields for the `CKRecord` when decoding. The system fields contain metadata for the record such as its unique identifier and they're very important when syncing.
-
-```swift
-var cloudKitRecordType: String { get }
-```
-
-This property should return the record type for your custom type. It's implemented automatically to return the name of the type, you only need to implement this if you need to customize the record type.
-
-### Data Types
-
-CloudKit imposes some limits on the types of data that can be stored as part of a `CKRecord`. CloudKitCodable attempts to use the best supported representation for any given property, but you should be aware of the limitations.
-
-#### Enumerations
-
-CloudKitCodable can encode and decode `enum` properties that are backed by either a `String` or `Int` raw value.
-
-In order for the enum encoding to work, your enum must conform to `CloudKitStringEnum` or `CloudKitIntEnum`, the only requirement being a static `cloudKitFallbackCase` property that determines the default value for the property in case the `CKRecord` contains a raw value that can't initialize the enum.
-
-This is important because if you add new cases to the enum, then it's possible for an older version of your app to get an enum case that it doesn't know about.
-
-#### URLs
-There's special handling for URLs because of the way CloudKit works with files. If you have a property that's a remote `URL` (i.e. a website), it's encoded as a `String` (CloudKit doesn't support URLs natively) and decoded back as a `URL`. 
-
-If your property is a `URL` and it contains a `URL` to a local file, it is encoded as a `CKAsset`, the file will be automatically uploaded to CloudKit when you save the containing record and downloaded when you get the record from the cloud. The decoded `URL` will contain the `URL` for the location on disk where CloudKit has downloaded the file.
+For details on how to use CloudKitCodable, please check the included documentation.
 
 ### Example
 
-Let's say you have a `Person` model you want to sync to CloudKit. This is what the model would look like:
+Declaring a model that can be encoded as a `CKRecord`:
 
 ```swift
 struct Person: CustomCloudKitCodable {
@@ -58,19 +23,10 @@ struct Person: CustomCloudKitCodable {
 }
 ```
 
-Notice I didn't implement `cloudKitRecordType`, in that case, the `CKRecord` type for this model will be `Person` (the name of the type itself).
-
-Now, before saving the record to CloudKit, we encode it:
+Creating a `CKRecord` from a `CustomCloudKitCodable` type:
 
 ```swift
-let rambo = Person(
-    cloudKitSystemFields: nil,
-    name: "Guilherme Rambo",
-    age: 26,
-    website: URL(string:"https://guilhermerambo.me")!,
-    avatar: URL(fileURLWithPath: "/Users/inside/Pictures/avatar.png"),
-    isDeveloper: true
-)
+let rambo = Person(...)
 
 do {
    let record = try CloudKitRecordEncoder().encode(rambo)
@@ -80,9 +36,7 @@ do {
 }
 ```
 
-Since `avatar` points to a local file, the corresponding file will be uploaded as a `CKAsset` when the record is saved to CloudKit and downloaded back when the record is retrieved.
-
-To decode the record:
+Decoding a `CustomCloudKitCodable` type from a `CKRecord`:
 
 ```swift
 let record = // record obtained from CloudKit
@@ -109,7 +63,7 @@ Add CloudKitCodable to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/insidegui/CloudKitCodable.git", from: "0.2.0")
+    .package(url: "https://github.com/insidegui/CloudKitCodable.git", from: "0.3.0")
 ]
 ```
 

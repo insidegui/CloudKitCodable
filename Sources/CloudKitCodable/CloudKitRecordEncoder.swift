@@ -12,6 +12,8 @@ import CloudKit
 /// Errors that can occur when encoding a custom type to `CKRecord`.
 public enum CloudKitRecordEncodingError: Error {
     /// A given model property contains a value that can't be encoded into the `CKRecord`.
+    ///
+    /// To learn more about supported data types and limitations, see <doc:DataTypes>.
     case unsupportedValueForKey(String)
     /// The existing value in ``CloudKitRecordRepresentable/cloudKitSystemFields`` couldn't be decoded
     /// for constructing an updated version of the corresponding `CKRecord`.
