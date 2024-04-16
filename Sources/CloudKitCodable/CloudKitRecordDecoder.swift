@@ -233,7 +233,9 @@ extension _CloudKitRecordDecoder.KeyedContainer: KeyedDecodingContainerProtocol 
 
         let data = try Data(contentsOf: url)
 
-        return try T.decoded(from: data, type: contentType)
+        /// Don't use dynamic content type (which is the type when `URL` can't figure out its type).
+        let effectiveType = contentType.isDynamic ? T.preferredContentType : contentType
+        return try T.decoded(from: data, type: effectiveType)
     }
 
     private func decodeURL(from asset: CKAsset) throws -> URL {
